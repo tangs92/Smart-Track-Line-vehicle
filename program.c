@@ -64,43 +64,46 @@ green_forward=0;}
 /***********************************************************************/
 int adc_LDR( void)
  { 
-int read = 0;//define the varible which used to save the resistance  of LDR
-   while (1)
-   {
-	   OpenADC(/*configuration ADC*/
-	ADC_FOSC_32 & 
-	ADC_RIGHT_JUST & 
-	ADC_20_TAD,ADC_CH0 & 
-	ADC_INT_OFF & 
-	ADC_VREFPLUS_VDD & 
-	ADC_VREFMINUS_VSS, 
-	0b0000
-		);	
-	Delay10TCYx(5);
-	SetChanADC(ADC_CH0);
-	ConvertADC();
-while(BusyADC( )); 
-{
-Delay10TCYx(5);	
-read=ReadADC();
-CloseADC();
-}
-if(read>=0x35f)/*the car will stop and turn on the yellow LED then return 1when the 
-	resistance of LDR is bigger than this value.Otherwise,the car continue to run 
-and turn off the yellow LED and return 0*/
-{
-	yellow_stop=1;
-	
-return 1;
-}
-else if(read<0x35f)
-	{yellow_stop=0;	
-	return 0;}
-	   }
+	int read = 0;//define the varible which used to save the resistance  of LDR
+	   while (1)
+	{
+		OpenADC(/*configuration ADC*/
+			ADC_FOSC_32 & 
+			ADC_RIGHT_JUST & 
+			ADC_20_TAD,ADC_CH0 & 
+			ADC_INT_OFF & 
+			ADC_VREFPLUS_VDD & 
+			ADC_VREFMINUS_VSS, 
+			0b0000
+				);	
+			Delay10TCYx(5);
+			SetChanADC(ADC_CH0);
+			ConvertADC();
+			
+		while(BusyADC( )); 
+		{
+			Delay10TCYx(5);	
+			read=ReadADC();
+			CloseADC();
+		}
+		
+		if(read>=0x35f)/*the car will stop and turn on the yellow LED then return 1when the 
+			resistance of LDR is bigger than this value.Otherwise,the car continue to run 
+		and turn off the yellow LED and return 0*/
+		{
+			yellow_stop=1;
+			return 1;
+		}
+		else if(read<0x35f)
+			{
+				yellow_stop=0;	
+				return 0;
+			}
+	}
  }
 
 /***********************************************************************/
- start_forward()// the fuction for crossing start line
+ void start_forward()// the fuction for crossing start line
 {
 	unsigned int r=2;//set the forward distance 	
 	while(r--)
@@ -132,70 +135,65 @@ else if(read<0x35f)
 }
 
 /***********************************************************************/
- turn_forward() //the fuction for turning forward
+ void turn_forward() //the fuction for turning forward
 {
-if (right_sense && left_sense )/*if two sensors detect the black line and return value of adc_LDR is 0,
-	this fuction will be implemented.*/
-{	
-	if( adc_LDR()==0 )
-	{		red_back=0;  
+	if (right_sense && left_sense )/*if two sensors detect the black line and return value of adc_LDR is 0,this fuction will be implemented.*/
+	{	
+		if( adc_LDR()==0 )
+		{		red_back=0;  
+				yellow_stop=0; 
+				green_forward=1;//turn on the green LED
+				PORTD=0x11;
+				Delay10KTCYx(20);
+				PORTD=0x99;
+				Delay10KTCYx(20);
+				PORTD=0x88;
+				Delay10KTCYx(20);
+				PORTD=0xaa;
+				Delay10KTCYx(20);
+				PORTD=0x22;
+				Delay10KTCYx(20);
+				PORTD=0x66; 
+				Delay10KTCYx(20);
+				PORTD=0x44; 
+				Delay10KTCYx(20);
+				PORTD=0x55;
+				Delay10KTCYx(20);
+		}
+
+	}		
+}
+/***********************************************************************/
+ void turn_right()/*if left sensor detects  the white line and return value of adc_LDR is 0,this fuction will be implemented.*/
+{
+	if(left_sense==white)
+	{
+		if( adc_LDR()==0)
+		{	red_back=0;  
 			yellow_stop=0; 
 			green_forward=1;//turn on the green LED
-			PORTD=0x11;
-			Delay10KTCYx(20);
-			PORTD=0x99;
-			Delay10KTCYx(20);
-			PORTD=0x88;
-			Delay10KTCYx(20);
-			PORTD=0xaa;
-			Delay10KTCYx(20);
-			PORTD=0x22;
-			Delay10KTCYx(20);
-			PORTD=0x66; 
-			Delay10KTCYx(20);
-			PORTD=0x44; 
-			Delay10KTCYx(20);
-			PORTD=0x55;
-			Delay10KTCYx(20);
-	}
-
-}	
-	
-
-
-}
-/***********************************************************************/
- turn_right()/*if left sensor detects  the white line and return value of adc_LDR is 0,
-	this fuction will be implemented.*/
-{if(left_sense==white  )
-{
-	if(  adc_LDR()==0)
-	{	red_back=0;  
-		yellow_stop=0; 
-		green_forward=1;//turn on the green LED
-		
-		PORTD=0x01;
-		using_timer0(2);
-		PORTD=0x09;
-		using_timer0(2);
-		PORTD=0x08;
-		using_timer0(2);
-		PORTD=0x0a;
-		using_timer0(2);	
-		PORTD=0x02;
-		using_timer0(2);
-		PORTD=0x06; 
-		using_timer0(2);
-		PORTD=0x04; 
-		using_timer0(2);
-		PORTD=0x05;
-		using_timer0(2);
+			
+			PORTD=0x01;
+			using_timer0(2);
+			PORTD=0x09;
+			using_timer0(2);
+			PORTD=0x08;
+			using_timer0(2);
+			PORTD=0x0a;
+			using_timer0(2);	
+			PORTD=0x02;
+			using_timer0(2);
+			PORTD=0x06; 
+			using_timer0(2);
+			PORTD=0x04; 
+			using_timer0(2);
+			PORTD=0x05;
+			using_timer0(2);
+		}
 	}
 }
-}
 /***********************************************************************/
- turn_left()/*if right sensor detects the white line and return value of adc_LDR is 0,
-	this fuction will be implemented.*/
+ void turn_left()/*if right sensor detects the white line and return value of adc_LDR is 0,this fuction will be implemented.*/
 {
 if (right_sense==white )
 {	
@@ -226,7 +224,7 @@ if (right_sense==white )
 	
 }
 /***********************************************************************/
- turn_back()/*this fuction makes the car turn back*/
+ void turn_back()/*this fuction makes the car turn back*/
 {
 	unsigned int x=3;//set the turn back distance 
 	
@@ -257,12 +255,9 @@ if (right_sense==white )
 
 }
 /***********************************************************************/
- turn_around()/*this fuction makes the car turn round*/
+ void turn_around()/*this fuction makes the car turn round*/
 {
 	unsigned int x=17;//set the turn around distance
-
-
-
 	while(x--)	
 	{
 		red_back=1;  //turn on the red LED
@@ -285,14 +280,11 @@ if (right_sense==white )
 		PORTD=0x15;
 		Delay10KTCYx(10);
 	}
-
-
 }
 /***********************************************************************/
-end_forward()/*this fuction makes the car cross the end line after turning back*/
+void end_forward()/*this fuction makes the car cross the end line after turning back*/
 {
 	unsigned int x=2;//set the forward distance
-
 	while(x--)
 	{	
 		red_back=0;  
@@ -326,54 +318,54 @@ void main()
 	TRISC=0x03;
 	TRISA = 0xFF; 
 	while(1)
-{
+	{
 		if(start_forwardOK==0)//In order to make this fuction implemented agian.
 		start_forward();	  //if start_forwardOK is equal to 1,the fuction"start_forward" can not be implemented 
-		
-		
+
+
 		start_forwardOK=1;//assign 1 to the flat variable.
-		
+
 		turn_forward();//According the sensors and then the car judges whether it moves forward. 
 		turn_left();//According the sensors and then the car judges whether it turn left.
 		turn_right();//According the sensors and then the car judges whether it turn right
-		
-/************************** Car Backoff Algorithm********************************/	
-/*Assume the two sensors both detect the white line,then programme will stop the car.
-Next, check the states of sensors again.If one of the sensor is black,
-then the car will turn to the direction which the sensor detect balck.
-Otherwise,the car will turn back and then the counter will be incremented by 1 when the car turn back
-Once the fuction of turning back is executed more than three times,that's mean the car is arriving the destination
-So the car will turn around and clear the counter and go back to the start line.*/		
-/***************************************************************************/		
-		if(  (right_sense || left_sense)==0  )//if two sensors detect the white line.
-{
+	
+	/************************** Car Backoff Algorithm********************************/	
+	/*Assume the two sensors both detect the white line,then programme will stop the car.
+	Next, check the states of sensors again.If one of the sensor is black,
+	then the car will turn to the direction which the sensor detect balck.
+	Otherwise,the car will turn back and then the counter will be incremented by 1 when the car turn back
+	Once the fuction of turning back is executed more than three times,that's mean the car is arriving the destination
+	So the car will turn around and clear the counter and go back to the start line.*/		
+	/***************************************************************************/		
+		if( (right_sense || left_sense)==0 )//if two sensors detect the white line.
+		{
 			red_back=0;  
 			yellow_stop=1; //stop and turn on the yellow LED
 			green_forward=0;
 			using_timer0(3);
-}	
-	
-					
-			//implemented turn back if two sensors detect the white line. 
-			using_timer0(2);//stop the car
-			if(  (right_sense || left_sense)==0  )//detect the states of two sensors again
-			{		back_counter++;	turn_back();			  //the counter used to count the number of times if the car turnning back  
-			}									  
-					if(back_counter>3 )			  
-												  /*if the car turns back more than three times,
-													that's mean the car arrive the destination	*/		
-					{red_back=1;  				  //turn on the red LED
-					yellow_stop=0; 
-					green_forward=0;
-					turn_around(); 				 //turn around the car
-					back_counter=0;				 //clean the counter
-				    }
-								  
-							 //clean the counter
-			
-			//detect the counter.
-
-
-
-}
+		}	
+				
+						
+		//implemented turn back if two sensors detect the white line. 
+		using_timer0(2);//stop the car
+		if(  (right_sense || left_sense)==0  )//detect the states of two sensors again
+		{		
+			back_counter++;	
+			turn_back();			  //the counter used to count the number of times if the car turnning back  
+		}	
+		
+		if(back_counter>3 )			  
+	  /*if the car turns back more than three times,
+		that's mean the car arrive the destination	*/		
+		{
+			red_back=1;  				  //turn on the red LED
+			yellow_stop=0; 
+			green_forward=0;
+			turn_around(); 				 //turn around the car
+			back_counter=0;				 //clean the counter
+		}
+									  
+				//clean the counter
+				//detect the counter.
+	}
 }
